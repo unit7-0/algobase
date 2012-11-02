@@ -84,6 +84,26 @@ public:
   static vector<int> khun(vector<int>* g, int n);
 };
 
+class Treap {
+public:
+    Treap(int key, int val): key(key), self(val), size(1),
+        priority(rand()), min(val), left(nullptr), right(nullptr) {
+    }
+
+    static Treap* merge(Treap* left, Treap* right);
+    static void split(Treap* treap, Treap*& left, Treap*& right, int index);
+
+    static void push(Treap* treap);
+    static void update(Treap* treap);
+    static int sizeOf(Treap* treap);
+    static int minOf(Treap *treap);
+private:
+    Treap left, right;
+
+    int key, priority;
+    int min, self, size;
+};
+
 int main(int argc, char **argv) {
 
     return 0;
@@ -359,4 +379,61 @@ bool Khun::try_khun(vector<int>* g, int u) {
         }
     }
     return false;
+}
+
+Treap* Treap::merge(Treap *left, Treap *right) {
+    if(left == nullptr) return right;
+    if(right == nullptr)    return left;
+
+    push(left, right);
+    Treap* t;
+    if(left->priority < right->priority) {
+        t = merge(left, right->left);
+        right->left = t;
+        t = right;
+    } else {
+        t = merge(left->right, right);
+        left->right = t;
+        t = left;
+    }
+    update(t);
+    return t;
+}
+
+void Treap::split(Treap* treap, Treap*& left, Treap*& right, int index) {
+    if(treap == nullptr) {
+        left = right = nullptr;
+        return;
+    }
+
+    push(treap);
+    if(sizeOf(treap->left) < index) {
+        split(treap->right, treap->right, right, sizeOf(treap->left) - index - 1);
+        left = treap;
+    } else {
+        split(treap->left, left, treap->left, index);
+        right = treap;
+    }
+    update(left);
+    update(right);
+}
+
+void Treap::push(Treap *treap) {
+    //>!
+}
+
+void Treap::update(Treap *treap) {
+    if(treap == nullptr)    return;
+    treap->size = sizeOf(treap->left) + sizeOf(treap->right) + 1;
+    treap->min = min(treap->self, min(minOf(treap->left), minOf(treap->right)));
+}
+
+int Treap::minOf(Treap* treap) {
+    if(treap == nullptr)    return numeric_limits<int>::max();
+    return treap->min;
+}
+
+int Treap::sizeOf(Treap *treap) {
+    if(treap == nullptr)    return 0;
+    return treap->size;
 }
