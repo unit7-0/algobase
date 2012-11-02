@@ -74,10 +74,22 @@ public:
     static ll dinic();
 };
 
+class Khun {
+public:
+  static int color;
+  static vector<int> used;
+  static vector<int> mt;
+
+  static bool try_khun(vector<int> *g, int u);
+  static vector<int> khun(vector<int>* g, int n);
+};
+
 int main(int argc, char **argv) {
 
     return 0;
 }
+
+
 
 ll binpow(int a, int n) {
     ll res = 1;
@@ -197,7 +209,8 @@ int DSU::findSet(int u) {
     return parent[u] = (u == parent[u] ? u : findSet(parent[u]));
 }
 
-LCA::LCA(vector<int> *g, int n, int start): depth(vector<int>(n)), first(vector<int>(n, -1)), used(vector<bool>(n)) {
+LCA::LCA(vector<int> *g, int n, int start): depth(vector<int>(n)),
+        first(vector<int>(n, -1)), used(vector<bool>(n)) {
     dfs(start, g);
     tree.resize(list.size() * 4);
     buildTree(1, 0, list.size() - 1);
@@ -324,4 +337,26 @@ ll Dinic::dinic() {
             flow += pushed;
     }
     return flow;
+}
+
+vector<int> Khun::khun(vector<int> *g, int n) {
+    mt.resize(n);
+    used.resize(n);
+
+    for(int i = 0; i < n; ++i) {
+        ++color;
+        try_khun(g, i);
+    }
+}
+
+bool Khun::try_khun(vector<int>* g, int u) {
+    if(used[u] == color)    return false;
+    used[u] = true;
+    for(int i = 0; i < g[u].size(); ++i) {
+        if(mt[g[u][i]] == -1 || try_khun(g, g[u][i])) {
+            mt[g[u][i]] = u;
+            return true;
+        }
+    }
+    return false;
 }
